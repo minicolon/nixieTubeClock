@@ -3,6 +3,7 @@ from datetime import datetime
 from gpiozero import LEDBoard
 
 cathode1 = LEDBoard(23, 21, 20, 16, 12)
+cathode2 = LEDBoard(26, 19, 13, 6)
 # Obtain current time and set both minute and hour value
 # t = time.localtime()
 # currentHour = time.strftime("%H", t)
@@ -23,26 +24,37 @@ cathode1 = LEDBoard(23, 21, 20, 16, 12)
 def BCD(AN, i):
     if i == 0:
         cathode1.value = (AN, 0, 0, 0, 0)
+        cathode2.value = (1, 0, 0, 1)
     elif i == 1:
         cathode1.value = (AN, 0, 0, 0, 1)
+        cathode2.value = (1, 0, 0, 0)
     elif i == 2:
         cathode1.value = (AN, 0, 0, 1, 0)
+        cathode2.value = (0, 1, 1, 1)
     elif i == 3:
         cathode1.value = (AN, 0, 0, 1, 1)
+        cathode2.value = (0, 1, 1, 0)
     elif i == 4:
         cathode1.value = (AN, 0, 1, 0, 0)
+        cathode2.value = (0, 1, 0, 1)
     elif i == 5:
         cathode1.value = (AN, 0, 1, 0, 1)
+        cathode2.value = (0, 1, 0, 0)
     elif i == 6:
         cathode1.value = (AN, 0, 1, 1, 0)
+        cathode2.value = (0, 0, 1, 1)
     elif i == 7:
         cathode1.value = (AN, 0, 1, 1, 1)
+        cathode2.value = (0, 0, 1, 0)
     elif i == 8:
         cathode1.value = (AN, 1, 0, 0, 0)
+        cathode2.value = (0, 0, 0, 1)
     elif i == 9:
         cathode1.value = (AN, 1, 0, 0, 1)
+        cathode2.value = (0, 0, 0, 0)
     else:
         cathode1.value = (AN, 0, 0, 0, 0)
+        cathode2.value = (1, 0, 0, 1)
 # cHour = 0
 # cMin = 0
 try:
@@ -52,6 +64,7 @@ try:
             time.sleep(.5)
 except KeyboardInterrupt:
     cathode1.value = (0, 0, 0, 0, 0)
+    cathode2.value = (1, 0, 0, 1)
 
 # print(f"{leadHour}{trailHour}:{leadMin}{trailMin}")
 # print(dictBCD[trailHour])
