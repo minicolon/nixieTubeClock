@@ -38,21 +38,60 @@ def getBCD(lHour, tHour, lMin, tMin):
     cathode2.value = BCD.get(tMin)
     time.sleep(.015)
 
-tMin = time.time() + 60
 try:
+    # Obtain current time and set both minute and hour value
+    currentTime = time.strftime("%H%M", time.localtime())
+    # separate time into individual digits
+    leadHour = int(currentTime[0])
+    trailHour = int(currentTime[1])
+    leadMin = int(currentTime[2])
+    trailMin = int(currentTime[3])
+    getBCD(leadHour, trailHour, leadMin, trailMin)
+    
     while True:
-        # Obtain current time and set both minute and hour value
-        currentTime = time.strftime("%H%M", time.localtime())
-        # separate time into individual digits
-        leadHour = int(currentTime[0])
-        trailHour = int(currentTime[1])
-        leadMin = int(currentTime[2])
-        trailMin = int(currentTime[3])
-        getBCD(leadHour, trailHour, leadMin, trailMin)
+        # used so the clock can run independently of the internet after first initialization
+        tMin = time.time() + 60
+        
+        # run this loop for 1 minute before breaking out into the logical checks
+        print(time.time())
         while time.time() < tMin:
             getBCD(leadHour, trailHour, leadMin, trailMin)
+        
+        # logic to determine how to increment time for each minute
+        # check if the time is at 11pm or 23:00
+        if leadHour == 2 and trailHour == 3:
+            # if at 23:59 set to 00:00 (midnight)
+            if leadMin == 5 and trailMin == 9:
+                leadHour, trailHour, leadMin, trailMin = 0, 0, 0, 0
+            
+            # increment by one minute until reaching 59 minutes
+            else:
+                if trailMin == 9:
+                    trailMin = 0
+                    leadMin = leadMin + 1
+                else:
+                    trailMin = trailMin + 1
+        
+        # if not at 11pm, carry this out
+        # increment hour by 1 if at 59 minutes
+        else:
+            if leadMin == 5 and trailMin == 9:
+                leadMin, trailMin = 0, 0
+                # determine whether to increment leading hour or not
+                if trailHour == 9:
+                    trailHour = 0
+                    leadHour = leadHour + 1
+                else:
+                    trailHour = trailHour + 1
+ 
+            # increment minute by 1 if not at 59
+            # determine whether to increment leading Minute or not
+            else:
+                if trailMin == 9:
+                    trailMin = 0
+                    leadMin = leadMin + 1
+                else:
+                    trailMin = trailMin + 1
+        
 except KeyboardInterrupt:
     AN.value = (0, 0)
-
-# print(f"{leadHour}{trailHour}:{leadMin}{trailMin}")
-# print(dictBCD[trailHour])
