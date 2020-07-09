@@ -1,10 +1,12 @@
 import time
-from datetime import datetime
-from gpiozero import LEDBoard
+from gpiozero import LEDBoard, Button
+from subprocess import call
 
-AN = LEDBoard(23, 24)
-cathode1 = LEDBoard(21, 20, 16, 12)
-cathode2 = LEDBoard(26, 19, 13, 6)
+offSwitch = Button(25) # 25=pin to turn off raspberry pi
+tubesOn = LEDBoard(22) # 22=pin to activate switch that turns on nixie tubes
+AN = LEDBoard(23, 24) # 23=hours, 24=minutes 
+cathode1 = LEDBoard(21, 20, 16, 12) # (MSB, Bit, Bit, LSB)
+cathode2 = LEDBoard(26, 19, 13, 6) # (MSB, Bit, Bit, LSB)
 
 
 
@@ -13,7 +15,7 @@ cathode2 = LEDBoard(26, 19, 13, 6)
 # increment each minute
 # reset after 12:59
     
-# output BCD value for every value change    
+# output BCD value for every decimal change    
 BCD = {
     0: (0, 0, 0, 0),
     1: (0, 0, 0, 1),
@@ -38,25 +40,29 @@ def getBCD(lHour, tHour, lMin, tMin):
     cathode2.value = BCD.get(tMin)
     time.sleep(.015)
 
-try:
-    # Obtain current time and set both minute and hour value
-    currentTime = time.strftime("%H%M", time.localtime())
-    # separate time into individual digits
-    leadHour = int(currentTime[0])
-    trailHour = int(currentTime[1])
-    leadMin = int(currentTime[2])
-    trailMin = int(currentTime[3])
-    getBCD(leadHour, trailHour, leadMin, trailMin)
-    
-    while True:
-        # used so the clock can run independently of the internet after first initialization
-        tMin = time.time() + 60
+# Obtain current time and set both minute and hour value
+currentTime = time.strftime("%H%M", time.localtime())
+# separate time into individual digits
+leadHour = int(currentTime[0])
+trailHour = int(currentTime[1])
+leadMin = int(currentTime[2])
+trailMin = int(currentTime[3])
+getBCD(leadHour, trailHour, leadMin, trailMin)
+
+#activates the nixie tubes
+tubesOn.on()
+
+while True:
+    # used so the clock can run independently of the internet after first initialization
+    tMin = time.time() + 60
         
-        # run this loop for 1 minute before breaking out into the logical checks
-        print(time.time())
-        while time.time() < tMin:
-            getBCD(leadHour, trailHour, leadMin, trailMin)
-        
+    # run this loop for 1 minute before breaking out into the logical checks
+    while time.time() < tMin:
+        getBCD(leadHour, trailHour, leadMin, trailMin)
+        if offSwitch.is_pressed:
+            break
+                
+    if offSwitch.is_pressed == False:        
         # logic to determine how to increment time for each minute
         # check if the time is at 11pm or 23:00
         if leadHour == 2 and trailHour == 3:
@@ -92,6 +98,10 @@ try:
                     leadMin = leadMin + 1
                 else:
                     trailMin = trailMin + 1
-        
-except KeyboardInterrupt:
-    AN.value = (0, 0)
+    else:
+        AN.value = (0,0)
+        tubesOn.off()
+        break
+
+call("sudo shutdown -h now", shell=True)     
+    
