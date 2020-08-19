@@ -1,6 +1,6 @@
 # Nixie Tube Clock 
 ## Hardware Components
-If using Raspberry pi
+For Raspberry pi
  - Raspberry Pi4 model B+ is what I used, but any should work
  - 4 Nixie Tubes, I used IN-14
  - ArduiNIX v3 Tube Driver
